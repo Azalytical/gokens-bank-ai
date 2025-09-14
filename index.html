@@ -16,8 +16,8 @@
     h1 { font-size: 2.4rem; margin-bottom: 10px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .subtitle { color: #718096; }
     .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-    .panel { background: rgba(255,255,255,.95); border-radius: 20px; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,.1); }
-    .panel h2 { color: #2d3748; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+    .panel { background: rgba(255,255,255,.6); backdrop-filter: blur(12px); border-radius: 20px; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,.12); border: 1px solid rgba(255,255,255,.45);} 
+    .panel h2 { color:#2d3748; margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid rgba(255,255,255,.35); }
     .control-group { margin-bottom: 16px; }
     .control-group label { display: block; color: #4a5568; margin-bottom: 8px; font-weight: 600; }
     .control-group input, .control-group select, .control-group textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; transition: all .3s; background: #fff; }
@@ -102,7 +102,7 @@
             <div class="loading"><p style="color:#718096">Выберите клиента для анализа</p></div>
           </div>
         </div>
-        <button class="btn" onclick="analyzeClient()" id="analyzeBtn" disabled>🔍 Анализировать и подобрать продукт</button>
+        
       </div>
 
       <div class="panel">
@@ -150,6 +150,14 @@
         <thead><tr><th>Код</th><th>Имя</th><th>Продукт</th><th>Пуш-уведомление</th></tr></thead>
         <tbody id="resultsBody"></tbody>
       </table>
+    </div>
+
+    <div class="panel" id="testsPanel">
+      <h2>🧪 Тесты</h2>
+      <div id="testsOutput" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:13px; background:#f7fafc; border:1px solid #edf2f7; border-radius:10px; padding:12px; white-space:pre-wrap; line-height:1.5">Нажмите «Запустить тесты», чтобы проверить генератор текстов и подбор продукта.</div>
+      <div style="margin-top:10px">
+        <button class="btn" onclick="runUnitTests()">▶ Запустить тесты</button>
+      </div>
     </div>
   </div>
 
@@ -256,11 +264,10 @@
         const analysis = analyzeClientBehavior(transactions, transfers, client);
         currentClientData = { client, transactions, transfers, analysis };
         displayTopCategories(analysis.topCategories);
-        document.getElementById('analyzeBtn').disabled = false;
+        analyzeClient();
       } catch (e){
         console.error('Ошибка загрузки клиента', e);
         categoryList.innerHTML = '<p style="color:#a0aec0;text-align:center">Ошибка чтения CSV. Проверьте /data</p>';
-        document.getElementById('analyzeBtn').disabled = true;
       }
     }
 
@@ -282,7 +289,6 @@
 
     // === АНАЛИТИКА ===
     function analyzeClientBehavior(transactions, transfers, client){
-      // агрегируем по категориям
       const categorySpending = {};
       let totalSpending = 0;
       let latestTxDate = null;
@@ -301,12 +307,7 @@
         .slice(0, 10)
         .map(([name, data]) => ({ name, amount: data.total, count: data.count, percentage: totalSpending ? ((data.total/totalSpending*100).toFixed(1)) : '0.0' }));
 
-      const transferAgg = {
-        totalIncoming: 0, totalOutgoing: 0,
-        hasSalary: false, hasStipend: false,
-        hasForex: false, hasInvest: false, hasLoans: false,
-        atmWithdrawals: 0, p2pTransfers: 0, utilities: 0
-      };
+      const transferAgg = { totalIncoming: 0, totalOutgoing: 0, hasSalary:false, hasStipend:false, hasForex:false, hasInvest:false, hasLoans:false, atmWithdrawals:0, p2pTransfers:0, utilities:0 };
       transfers.forEach(t => {
         const amt = toNumber(t.amount);
         if (t.direction === 'in') {
@@ -324,29 +325,32 @@
         }
       });
 
-      // признаки частых поездок/такси
       const TRAVEL_CATS = ['Путешествия', 'Такси', 'Отели', 'Транспорт'];
-      const travelSpending = topCategories.filter(c => TRAVEL_CATS.includes(c.name)).reduce((s,c)=>s+c.amount,0);
-
-      // премиальные траты
       const PREMIUM_CATS = ['Ювелирные украшения', 'Косметика и Парфюмерия', 'Рестораны', 'Кафе и рестораны'];
-      const premiumSpending = topCategories.filter(c => PREMIUM_CATS.includes(c.name)).reduce((s,c)=>s+c.amount,0);
-
-      // онлайн-сервисы (для кредитки 10%)
       const ONLINE_CATS = ['Смотрим дома','Едим дома','Играем дома','Доставка','Онлайн-сервисы','Развлечения','Кино'];
+
+      const travelSpending = topCategories.filter(c => TRAVEL_CATS.includes(c.name)).reduce((s,c)=>s+c.amount,0);
+      const premiumSpending = topCategories.filter(c => PREMIUM_CATS.includes(c.name)).reduce((s,c)=>s+c.amount,0);
       const onlineSpending = topCategories.filter(c => ONLINE_CATS.includes(c.name)).reduce((s,c)=>s+c.amount,0);
 
-      return {
-        topCategories,
-        totalSpending,
-        monthlySpending: totalSpending/3,
-        transferAgg,
-        balance: toNumber(client.avg_monthly_balance_KZT),
-        travelSpending,
-        premiumSpending,
-        onlineSpending,
-        latestTxDate
-      };
+      function contextMonthFor(cats){
+        if (!transactions || !transactions.length) return null;
+        const buckets = new Map();
+        for (const t of transactions){
+          if (!t.date || !cats.includes(t.category)) continue;
+          const d = new Date(t.date); if (isNaN(d)) continue;
+          const key = d.getMonth();
+          buckets.set(key, (buckets.get(key) || 0) + toNumber(t.amount));
+        }
+        if (!buckets.size) return null;
+        let bestKey = null, bestVal = -Infinity;
+        for (const [k,v] of buckets){ if (v > bestVal){ bestVal = v; bestKey = k; } }
+        return MONTHS_RU[bestKey];
+      }
+
+      const contextMonths = { travel: contextMonthFor(TRAVEL_CATS), premium: contextMonthFor(PREMIUM_CATS), online: contextMonthFor(ONLINE_CATS) };
+
+      return { topCategories, totalSpending, monthlySpending: totalSpending/3, transferAgg, balance: toNumber(client.avg_monthly_balance_KZT), travelSpending, premiumSpending, onlineSpending, latestTxDate, contextMonths };
     }
 
     function displayTopCategories(categories){
@@ -441,7 +445,7 @@
 
     // === ПУШ-ТЕКСТЫ С УЧЁТОМ ВОЗРАСТА/TOV ===
     const MONTHS_RU = ['январе','феврале','марте','апреле','мае','июне','июле','августе','сентябре','октябре','ноябре','декабре'];
-    function monthFromDate(d){ if (!d) return 'этом месяце'; const m = d.getMonth(); return ` ${MONTHS_RU[m]}`; }
+    function monthFromDate(d){ if(!d) return null; const m = d.getMonth(); return MONTHS_RU[m]; }
 
     function toneByAge(age){
       if (age <= 24) return { emoji:'🙂', humor: 1, formal: false };
@@ -460,8 +464,6 @@
       const name = client.name || 'Клиент';
       const age = toNumber(client.age);
       const tone = toneByAge(age);
-      const monthWord = monthFromDate(a.latestTxDate);
-
       const cats = a.topCategories.map(c => c.name);
       const top3 = cats.slice(0,3).join(', ');
 
@@ -470,7 +472,9 @@
         case 'Карта для путешествий': {
           const monthlyTravel = Math.round(a.travelSpending/3);
           const cb = Math.round(monthlyTravel * 0.04);
-          text = `${name}, в${monthWord} у вас много поездок и такси — ${formatNumberSpaced(monthlyTravel)} ₸. С тревел‑картой вернули бы ≈${formatNumberSpaced(cb)} ₸ кешбэком. Оформить карту?`;
+          const m = (a.contextMonths && a.contextMonths.travel) ? a.contextMonths.travel : null;
+          const when = m ? `в ${m}` : 'за последние месяцы';
+          text = `${name}, ${when} у вас много поездок и такси — ${formatNumberSpaced(monthlyTravel)} ₸. С тревел‑картой вернули бы ≈${formatNumberSpaced(cb)} ₸. Оформить карту?`;
           break;
         }
         case 'Премиальная карта': {
@@ -585,6 +589,48 @@
       const a = document.createElement('a');
       const url = URL.createObjectURL(blob);
       a.href = url; a.download = 'push_notifications.csv'; a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    // === ТЕСТЫ ===
+    function runUnitTests(){
+      const out = [];
+      function assert(desc, cond){ out.push(`${cond ? '✅' : '❌'} ${desc}`); }
+      try {
+        const client1 = { name:'Аслан', age:29, avg_monthly_balance_KZT:350000 };
+        const analysis1 = {
+          topCategories:[{name:'Такси',amount:90000},{name:'Путешествия',amount:120000},{name:'Кафе и рестораны',amount:45000}],
+          onlineSpending: 30000,
+          travelSpending: 210000,
+          premiumSpending: 0,
+          monthlySpending: (90000+120000+45000)/3,
+          transferAgg:{hasForex:false, totalOutgoing:0, hasLoans:false, utilities:0},
+          contextMonths:{travel:'августе'}
+        };
+        const rec1 = selectBestProduct(client1, analysis1);
+        const push1 = generatePush(client1, rec1, analysis1);
+        assert('Рекомендация для travel-клиента — "Карта для путешествий"', rec1.product === 'Карта для путешествий');
+        assert('Пуш содержит слово "такси"', /такси/i.test(push1));
+
+        const client2 = { name:'Алия', age:41, avg_monthly_balance_KZT:6200000 };
+        const analysis2 = {
+          topCategories:[{name:'Рестораны',amount:180000},{name:'Ювелирные украшения',amount:150000},{name:'Продукты питания',amount:90000}],
+          onlineSpending: 10000,
+          travelSpending: 0,
+          premiumSpending: 330000,
+          monthlySpending: (180000+150000+90000)/3,
+          transferAgg:{hasForex:false, totalOutgoing:0, hasLoans:false, utilities:0},
+          contextMonths:{premium:'июле'}
+        };
+        const rec2 = selectBestProduct(client2, analysis2);
+        const push2 = generatePush(client2, rec2, analysis2);
+        assert('Рекомендация для премиального клиента — "Премиальная карта"', rec2.product === 'Премиальная карта');
+        assert('Пуш содержит "кешб"', /кешб/i.test(push2));
+
+        assert('Два пуша отличаются по тексту', push1 !== push2);
+      } catch (e){
+        out.push('❌ Исключение во время тестов: ' + (e && e.message ? e.message : e));
+      }
+      document.getElementById('testsOutput').textContent = out.join('\n');
     }
 
     // === ИНИЦИАЛИЗАЦИЯ ===
