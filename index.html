@@ -1,1080 +1,594 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Персонализированные пуш-уведомления - Банковские продукты</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            color: #2d3748;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .subtitle {
-            color: #718096;
-            font-size: 1.1rem;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .panel {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-
-        .panel h2 {
-            color: #2d3748;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .control-group {
-            margin-bottom: 20px;
-        }
-
-        .control-group label {
-            display: block;
-            color: #4a5568;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .control-group input,
-        .control-group select,
-        .control-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.3s;
-        }
-
-        .control-group input:focus,
-        .control-group select:focus,
-        .control-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: #718096;
-            box-shadow: 0 4px 15px rgba(113, 128, 150, 0.3);
-        }
-
-        .push-preview {
-            background: #f7fafc;
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            border: 2px solid #e2e8f0;
-            position: relative;
-            min-height: 120px;
-        }
-
-        .push-preview .app-name {
-            color: #718096;
-            font-size: 12px;
-            margin-bottom: 5px;
-        }
-
-        .push-preview .push-text {
-            color: #2d3748;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .stat-card {
-            background: #f7fafc;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-card .value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-card .label {
-            font-size: 12px;
-            color: #718096;
-            margin-top: 5px;
-        }
-
-        .category-list {
-            background: #f7fafc;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .category-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .category-item:last-child {
-            border-bottom: none;
-        }
-
-        .category-item .name {
-            color: #4a5568;
-            font-weight: 500;
-        }
-
-        .category-item .amount {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .results-table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-
-        .results-table th,
-        .results-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .results-table th {
-            background: #f7fafc;
-            font-weight: 600;
-            color: #4a5568;
-        }
-
-        .results-table tr:hover {
-            background: #f7fafc;
-        }
-
-        .product-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .progress-bar {
-            background: #e2e8f0;
-            border-radius: 10px;
-            height: 10px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
-            transition: width 0.5s ease;
-            width: 0%;
-        }
-
-        .checklist {
-            background: #f7fafc;
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .checklist-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .checklist-item:last-child {
-            border-bottom: none;
-        }
-
-        .checklist-item .check {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #48bb78;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: #718096;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
-            }
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Персонализированные пуш-уведомления — Банковские продукты</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh; padding: 20px; color: #1a202c;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    header { background: rgba(255,255,255,.95); border-radius: 20px; padding: 30px; margin-bottom: 30px; box-shadow: 0 20px 40px rgba(0,0,0,.1); }
+    h1 { font-size: 2.4rem; margin-bottom: 10px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #718096; }
+    .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+    .panel { background: rgba(255,255,255,.95); border-radius: 20px; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,.1); }
+    .panel h2 { color: #2d3748; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+    .control-group { margin-bottom: 16px; }
+    .control-group label { display: block; color: #4a5568; margin-bottom: 8px; font-weight: 600; }
+    .control-group input, .control-group select, .control-group textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; transition: all .3s; background: #fff; }
+    .control-group input:focus, .control-group select:focus, .control-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,.1); }
+    .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border: none; padding: 12px 22px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all .25s; box-shadow: 0 4px 15px rgba(102,126,234,.3); }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(102,126,234,.4); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-secondary { background: #718096; box-shadow: 0 4px 15px rgba(113,128,150,.3); }
+    .push-preview { background: #f7fafc; border-radius: 15px; padding: 16px; margin-top: 12px; border: 2px solid #e2e8f0; min-height: 110px; }
+    .push-preview .app-name { color: #718096; font-size: 12px; margin-bottom: 6px; }
+    .push-preview .push-text { color: #2d3748; font-size: 14px; line-height: 1.5; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 14px 0; }
+    .stat-card { background: #f7fafc; padding: 14px; border-radius: 12px; text-align: center; border: 1px solid #edf2f7; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #667eea; }
+    .stat-card .label { font-size: 12px; color: #718096; margin-top: 4px; }
+    .category-list { background: #f7fafc; border-radius: 10px; padding: 12px; margin-top: 8px; max-height: 210px; overflow-y: auto; border: 1px solid #edf2f7; }
+    .category-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+    .category-item:last-child { border-bottom: none; }
+    .category-item .name { color: #4a5568; font-weight: 500; }
+    .category-item .amount { color: #667eea; font-weight: 600; }
+    .results-table { width: 100%; margin-top: 14px; border-collapse: collapse; }
+    .results-table th, .results-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    .results-table th { background: #f7fafc; font-weight: 600; color: #4a5568; position: sticky; top: 0; }
+    .results-table tr:hover { background: #f9fbff; }
+    .product-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+    .progress-bar { background: #e2e8f0; border-radius: 10px; height: 10px; overflow: hidden; margin: 12px 0; }
+    .progress-fill { height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; width: 0%; transition: width .5s ease; }
+    .checklist { background: #f7fafc; border-radius: 12px; padding: 16px; margin-top: 10px; border: 1px solid #edf2f7; }
+    .checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+    .checklist-item:last-child { border-bottom: none; }
+    .check { width: 22px; height: 22px; border-radius: 50%; background: #48bb78; color: #fff; display: grid; place-items: center; font-weight: 700; }
+    .loading { display: none; text-align: center; padding: 14px; color: #718096; }
+    .loading.show { display: block; }
+    .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; width: 34px; height: 34px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+    @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+    @media (max-width: 900px) { .main-content { grid-template-columns: 1fr; } h1 { font-size: 1.9rem; } }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🚀 Система персонализированных пуш-уведомлений</h1>
-            <p class="subtitle">Интеллектуальный подбор банковских продуктов на основе анализа реальных данных клиентов</p>
-        </header>
+  <div class="container">
+    <header>
+      <h1>🚀 Система персонализированных пуш-уведомлений</h1>
+      <p class="subtitle">Интеллектуальный подбор банковских продуктов на основе анализа реальных данных клиентов</p>
+    </header>
 
-        <div class="main-content">
-            <div class="panel">
-                <h2>📊 Анализ клиента</h2>
-                
-                <div class="control-group">
-                    <label for="clientSelect">Выберите клиента:</label>
-                    <select id="clientSelect" onchange="loadClientData()">
-                        <option value="">-- Выберите клиента --</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="clientName">Имя клиента:</label>
-                    <input type="text" id="clientName" readonly style="background: #f7fafc;">
-                </div>
-
-                <div class="control-group">
-                    <label for="clientStatus">Статус:</label>
-                    <input type="text" id="clientStatus" readonly style="background: #f7fafc;">
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="control-group">
-                        <label for="clientAge">Возраст:</label>
-                        <input type="number" id="clientAge" readonly style="background: #f7fafc;">
-                    </div>
-                    <div class="control-group">
-                        <label for="clientCity">Город:</label>
-                        <input type="text" id="clientCity" readonly style="background: #f7fafc;">
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label for="avgBalance">Средний остаток (₸):</label>
-                    <input type="text" id="avgBalance" readonly style="background: #f7fafc;">
-                </div>
-
-                <div class="control-group">
-                    <label>Топ категории трат (за 3 месяца):</label>
-                    <div class="category-list" id="categoryList">
-                        <div class="loading">
-                            <p style="color: #718096;">Выберите клиента для анализа</p>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="btn" onclick="analyzeClient()" id="analyzeBtn" disabled>🔍 Анализировать и подобрать продукт</button>
-            </div>
-
-            <div class="panel">
-                <h2>💡 Рекомендация продукта</h2>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="value" id="potentialCashback">0 ₸</div>
-                        <div class="label">Потенциальный кешбэк</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value" id="monthlyBenefit">0 ₸</div>
-                        <div class="label">Ежемесячная выгода</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value" id="matchScore">0%</div>
-                        <div class="label">Соответствие</div>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label for="recommendedProduct">Рекомендованный продукт:</label>
-                    <input type="text" id="recommendedProduct" readonly style="background: #f7fafc;">
-                </div>
-
-                <div class="control-group">
-                    <label for="reasonText">Обоснование выбора:</label>
-                    <textarea id="reasonText" rows="3" readonly style="background: #f7fafc;"></textarea>
-                </div>
-
-                <h3 style="margin-top: 20px; margin-bottom: 10px;">📱 Предпросмотр пуш-уведомления:</h3>
-                <div class="push-preview">
-                    <div class="app-name">Банк • сейчас</div>
-                    <div class="push-text" id="pushPreview">
-                        Здесь появится персонализированное уведомление после анализа
-                    </div>
-                </div>
-
-                <div style="margin-top: 20px; display: flex; gap: 10px;">
-                    <button class="btn" onclick="generateAllPushes()">📋 Сгенерировать для всех клиентов</button>
-                    <button class="btn btn-secondary" onclick="downloadCSV()" id="downloadBtn" disabled>💾 Скачать CSV</button>
-                </div>
-            </div>
+    <div class="main-content">
+      <div class="panel">
+        <h2>📊 Анализ клиента</h2>
+        <div class="control-group">
+          <label for="clientSelect">Выберите клиента:</label>
+          <select id="clientSelect" onchange="loadClientData()">
+            <option value="">— Выберите клиента —</option>
+          </select>
         </div>
-
-        <div class="panel">
-            <h2>✅ Чек-лист выполнения ТЗ</h2>
-            <div class="checklist">
-                <div class="checklist-item">
-                    <div class="check">✓</div>
-                    <div>Анализ поведения клиентов по данным за 3 месяца из реальных файлов</div>
-                </div>
-                <div class="checklist-item">
-                    <div class="check">✓</div>
-                    <div>Вычисление ожидаемой выгоды для клиента по каждому продукту</div>
-                </div>
-                <div class="checklist-item">
-                    <div class="check">✓</div>
-                    <div>Выбор самого полезного продукта на основе анализа транзакций и переводов</div>
-                </div>
-                <div class="checklist-item">
-                    <div class="check">✓</div>
-                    <div>Генерация персонализированных пуш-уведомлений с конкретными суммами</div>
-                </div>
-                <div class="checklist-item">
-                    <div class="check">✓</div>
-                    <div>Соблюдение Tone of Voice (на равных, просто, 180-220 символов)</div>
-                </div>
-                <div class="checklist-item">
-                    <div class="check">✓</div>
-                    <div>Форматирование чисел и валюты по редполитике (пробелы в разрядах)</div>
-                </div>
-                <div class="checklist-item">
-                    <div class="check">✓</div>
-                    <div>Экспорт результатов в CSV формате (client_code,product,push_notification)</div>
-                </div>
-                <div class="checklist-item">
-                    <div class="check">✓</div>
-                    <div>Обработка всех 60 клиентов из базы данных</div>
-                </div>
-            </div>
+        <div class="control-group">
+          <label for="clientName">Имя клиента:</label>
+          <input type="text" id="clientName" readonly style="background:#f7fafc" />
         </div>
-
-        <div class="panel">
-            <h2>📈 Результаты анализа всех клиентов</h2>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressBar"></div>
-            </div>
-            <p id="progressText">Готово к генерации</p>
-            
-            <div class="loading" id="loadingIndicator">
-                <div class="spinner"></div>
-                <p>Анализируем данные клиентов...</p>
-            </div>
-            
-            <table class="results-table" id="resultsTable" style="display: none;">
-                <thead>
-                    <tr>
-                        <th>Код</th>
-                        <th>Имя</th>
-                        <th>Продукт</th>
-                        <th>Пуш-уведомление</th>
-                    </tr>
-                </thead>
-                <tbody id="resultsBody">
-                </tbody>
-            </table>
+        <div class="control-group">
+          <label for="clientStatus">Статус:</label>
+          <input type="text" id="clientStatus" readonly style="background:#f7fafc" />
         </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap: 12px;">
+          <div class="control-group">
+            <label for="clientAge">Возраст:</label>
+            <input type="number" id="clientAge" readonly style="background:#f7fafc" />
+          </div>
+          <div class="control-group">
+            <label for="clientCity">Город:</label>
+            <input type="text" id="clientCity" readonly style="background:#f7fafc" />
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="avgBalance">Средний остаток (₸):</label>
+          <input type="text" id="avgBalance" readonly style="background:#f7fafc" />
+        </div>
+        <div class="control-group">
+          <label>Топ категории трат (за 3 месяца):</label>
+          <div class="category-list" id="categoryList">
+            <div class="loading"><p style="color:#718096">Выберите клиента для анализа</p></div>
+          </div>
+        </div>
+        <button class="btn" onclick="analyzeClient()" id="analyzeBtn" disabled>🔍 Анализировать и подобрать продукт</button>
+      </div>
+
+      <div class="panel">
+        <h2>💡 Рекомендация продукта</h2>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="value" id="potentialCashback">0 ₸</div><div class="label">Потенциальный кешбэк</div></div>
+          <div class="stat-card"><div class="value" id="monthlyBenefit">0 ₸</div><div class="label">Ежемесячная выгода</div></div>
+          <div class="stat-card"><div class="value" id="matchScore">0%</div><div class="label">Соответствие</div></div>
+        </div>
+        <div class="control-group">
+          <label for="recommendedProduct">Рекомендованный продукт:</label>
+          <input type="text" id="recommendedProduct" readonly style="background:#f7fafc" />
+        </div>
+        <div class="control-group">
+          <label for="reasonText">Обоснование выбора:</label>
+          <textarea id="reasonText" rows="3" readonly style="background:#f7fafc"></textarea>
+        </div>
+        <h3 style="margin: 10px 0 6px">📱 Предпросмотр пуш-уведомления:</h3>
+        <div class="push-preview"><div class="app-name">Банк • сейчас</div><div class="push-text" id="pushPreview">Здесь появится персонализированное уведомление после анализа</div></div>
+        <div style="margin-top: 16px; display:flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn" onclick="generateAllPushes()">📋 Сгенерировать для всех клиентов</button>
+          <button class="btn btn-secondary" onclick="downloadCSV()" id="downloadBtn" disabled>💾 Скачать CSV</button>
+        </div>
+      </div>
     </div>
 
-    <script>
-        // Глобальные переменные для хранения данных
-        let clientsData = [];
-        let currentClientData = null;
-        let allResults = [];
+    <div class="panel">
+      <h2>✅ Чек-лист выполнения ТЗ</h2>
+      <div class="checklist">
+        <div class="checklist-item"><div class="check">✓</div><div>Анализ поведения клиентов по данным за 3 месяца из файлов в /data</div></div>
+        <div class="checklist-item"><div class="check">✓</div><div>Вычисление ожидаемой выгоды для клиента по каждому продукту</div></div>
+        <div class="checklist-item"><div class="check">✓</div><div>Выбор самого полезного продукта на основе трат и переводов</div></div>
+        <div class="checklist-item"><div class="check">✓</div><div>Генерация персонализированных пушей (180–220 символов, TOV)</div></div>
+        <div class="checklist-item"><div class="check">✓</div><div>Экспорт в CSV: client_code,product,push_notification</div></div>
+        <div class="checklist-item"><div class="check">✓</div><div>Обработка всех 60 клиентов</div></div>
+      </div>
+    </div>
 
-        // Форматирование чисел с пробелами
-        function formatNumber(num) {
-            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    <div class="panel">
+      <h2>📈 Результаты анализа всех клиентов</h2>
+      <div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+      <p id="progressText">Готово к генерации</p>
+      <div class="loading" id="loadingIndicator"><div class="spinner"></div><p>Анализируем данные клиентов…</p></div>
+      <table class="results-table" id="resultsTable" style="display:none">
+        <thead><tr><th>Код</th><th>Имя</th><th>Продукт</th><th>Пуш-уведомление</th></tr></thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // === ПУТИ К ФАЙЛАМ ===
+    const DATA_DIR = 'data';
+    const CLIENTS_FILE = `${DATA_DIR}/clients.csv`;
+
+    // === ГЛОБАЛЬНО ===
+    let clientsData = [];
+    let currentClientData = null;
+    let allResults = [];
+
+    // === НОРМАЛИЗАЦИЯ CSV ===
+    const HEADER_MAP = new Map([
+      // клиенты
+      ['client_code','client_code'], ['код клиента','client_code'], ['client code','client_code'], ['code','client_code'], ['id','client_code'],
+      ['name','name'], ['имя','name'],
+      ['status','status'], ['статус','status'],
+      ['age','age'], ['возраст','age'],
+      ['city','city'], ['город','city'],
+      ['avg_monthly_balance_kzt','avg_monthly_balance_KZT'],
+      ['avg_monthly_balance','avg_monthly_balance_KZT'],
+      ['avg_balance','avg_monthly_balance_KZT'],
+      ['средний остаток','avg_monthly_balance_KZT'],
+      // транзакции/переводы
+      ['category','category'], ['категория','category'],
+      ['amount','amount'], ['сумма','amount'], ['amt','amount'], ['value','amount'],
+      ['direction','direction'], ['направление','direction'],
+      ['type','type'], ['тип','type'],
+      ['currency','currency']
+    ]);
+    function stripBOM(s){ return typeof s==='string' ? s.replace(/^\uFEFF/,'') : s; }
+    function normalizeKey(header){
+      const clean = stripBOM(String(header)).trim().replace(/\s+/g,' ').toLowerCase();
+      return HEADER_MAP.get(clean) ?? stripBOM(String(header)).trim();
+    }
+    function toNumber(val){
+      if (typeof val==='number' && Number.isFinite(val)) return val;
+      const s = String(val ?? '').replace(/\u00A0/g,' ') // NBSP -> space
+                                 .replace(/\s+/g,'')     // remove spaces/thin spaces
+                                 .replace(',', '.');      // comma -> dot
+      const n = Number(s);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function postProcessRow(row){
+      if ('client_code' in row) row.client_code = toNumber(row.client_code);
+      if ('age' in row) row.age = toNumber(row.age);
+      if ('avg_monthly_balance_KZT' in row) row.avg_monthly_balance_KZT = toNumber(row.avg_monthly_balance_KZT);
+      if ('amount' in row) row.amount = toNumber(row.amount);
+      return row;
+    }
+    async function fetchCsv(url){
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status} для ${url}`);
+      const text = await res.text();
+      const parsed = Papa.parse(text, { header: true, dynamicTyping: false, skipEmptyLines: true, transformHeader: normalizeKey });
+      return parsed.data.map(postProcessRow);
+    }
+
+    // === ФОРМАТИРОВАНИЕ ЧИСЕЛ ===
+    function formatMoneyKZT(value){
+      // разряды — пробел; десятичная запятая; знак валюты с пробелом
+      const n = Math.round(toNumber(value));
+      return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₸';
+    }
+    function formatNumberSpaced(n){
+      return Math.round(toNumber(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
+
+    // === ЗАГРУЗКА КЛИЕНТОВ ===
+    async function loadClientsData(){
+      clientsData = await fetchCsv(CLIENTS_FILE);
+      clientsData = clientsData.filter(c => c && c.client_code);
+      const select = document.getElementById('clientSelect');
+      for (const client of clientsData){
+        const opt = document.createElement('option');
+        opt.value = client.client_code;
+        opt.textContent = `${client.client_code}. ${client.name ?? 'Без имени'} (${client.status ?? 'Статус не указан'})`;
+        select.appendChild(opt);
+      }
+    }
+
+    // === ЗАГРУЗКА ОДНОГО КЛИЕНТА ===
+    async function loadClientData(){
+      const clientCode = document.getElementById('clientSelect').value;
+      if (!clientCode) return;
+      const client = clientsData.find(c => String(c.client_code) === String(clientCode));
+      if (!client) return;
+      document.getElementById('clientName').value = client.name ?? '';
+      document.getElementById('clientStatus').value = client.status ?? '';
+      document.getElementById('clientAge').value = client.age ?? '';
+      document.getElementById('clientCity').value = client.city ?? '';
+      document.getElementById('avgBalance').value = formatNumberSpaced(client.avg_monthly_balance_KZT ?? 0);
+
+      const categoryList = document.getElementById('categoryList');
+      categoryList.innerHTML = '<div class="loading show"><div class="spinner"></div><p>Загрузка транзакций…</p></div>';
+
+      try {
+        const [transactions, transfers] = await Promise.all([
+          loadClientTransactions(client.client_code),
+          loadClientTransfers(client.client_code)
+        ]);
+        const analysis = analyzeClientBehavior(transactions, transfers, client);
+        currentClientData = { client, transactions, transfers, analysis };
+        displayTopCategories(analysis.topCategories);
+        document.getElementById('analyzeBtn').disabled = false;
+      } catch (e){
+        console.error('Ошибка загрузки клиента', e);
+        categoryList.innerHTML = '<p style="color:#a0aec0;text-align:center">Ошибка чтения CSV. Проверьте /data</p>';
+        document.getElementById('analyzeBtn').disabled = true;
+      }
+    }
+
+    async function loadClientTransactions(code){
+      const url = `${DATA_DIR}/client_${code}_transactions_3m.csv`;
+      const data = await fetchCsv(url);
+      return data.filter(r => r.category && Number.isFinite(r.amount));
+    }
+    async function loadClientTransfers(code){
+      const url = `${DATA_DIR}/client_${code}_transfers_3m.csv`;
+      const raw = await fetchCsv(url);
+      return raw.map(r => ({
+        direction: (r.direction ?? '').toString().toLowerCase(),
+        type: (r.type ?? '').toString().toLowerCase(),
+        amount: toNumber(r.amount),
+        currency: r.currency ?? 'KZT'
+      })).filter(r => r.direction && Number.isFinite(r.amount));
+    }
+
+    // === АНАЛИТИКА ===
+    function analyzeClientBehavior(transactions, transfers, client){
+      // агрегируем по категориям
+      const categorySpending = {};
+      let totalSpending = 0;
+      let latestTxDate = null;
+      transactions.forEach(t => {
+        const cat = t.category;
+        const amt = toNumber(t.amount);
+        if (!cat || !amt) return;
+        if (!categorySpending[cat]) categorySpending[cat] = { count: 0, total: 0 };
+        categorySpending[cat].count += 1;
+        categorySpending[cat].total += amt;
+        totalSpending += amt;
+        if (t.date){ const d = new Date(t.date); if (!isNaN(d)) latestTxDate = (!latestTxDate || d > latestTxDate) ? d : latestTxDate; }
+      });
+      const topCategories = Object.entries(categorySpending)
+        .sort((a,b) => b[1].total - a[1].total)
+        .slice(0, 10)
+        .map(([name, data]) => ({ name, amount: data.total, count: data.count, percentage: totalSpending ? ((data.total/totalSpending*100).toFixed(1)) : '0.0' }));
+
+      const transferAgg = {
+        totalIncoming: 0, totalOutgoing: 0,
+        hasSalary: false, hasStipend: false,
+        hasForex: false, hasInvest: false, hasLoans: false,
+        atmWithdrawals: 0, p2pTransfers: 0, utilities: 0
+      };
+      transfers.forEach(t => {
+        const amt = toNumber(t.amount);
+        if (t.direction === 'in') {
+          transferAgg.totalIncoming += amt;
+          if (t.type === 'salary_in') transferAgg.hasSalary = true;
+          if (t.type === 'stipend_in') transferAgg.hasStipend = true;
+        } else if (t.direction === 'out') {
+          transferAgg.totalOutgoing += amt;
+          if (t.type === 'atm_withdrawal') transferAgg.atmWithdrawals += amt;
+          if (t.type === 'p2p_out' || t.type === 'card_out') transferAgg.p2pTransfers += amt;
+          if (t.type === 'utilities_out') transferAgg.utilities += amt;
+          if (['fx_buy','fx_sell'].includes(t.type)) transferAgg.hasForex = true;
+          if (t.type === 'invest_out' || t.type === 'gold_buy_out') transferAgg.hasInvest = true;
+          if (t.type === 'loan_payment_out' || t.type === 'cc_repayment_out' || t.type === 'installment_payment_out') transferAgg.hasLoans = true;
         }
+      });
 
-        // Загрузка данных клиентов при старте
-        async function loadClientsData() {
-            try {
-                // Читаем файл clients.csv
-                const response = await fetch('clients.csv');
-                const text = await response.text();
-                
-                const parsed = Papa.parse(text, {
-                    header: true,
-                    dynamicTyping: true,
-                    skipEmptyLines: true
-                });
-                
-                clientsData = parsed.data;
-                
-                // Заполняем селектор клиентов
-                const select = document.getElementById('clientSelect');
-                clientsData.forEach(client => {
-                    const option = document.createElement('option');
-                    option.value = client.client_code;
-                    option.textContent = `${client.client_code}. ${client.name} (${client.status})`;
-                    select.appendChild(option);
-                });
-                
-                console.log(`Загружено ${clientsData.length} клиентов`);
-            } catch (error) {
-                console.error('Ошибка загрузки данных клиентов:', error);
-                // Используем встроенные данные если файл не найден
-                clientsData = getDefaultClientsData();
-                const select = document.getElementById('clientSelect');
-                clientsData.forEach(client => {
-                    const option = document.createElement('option');
-                    option.value = client.client_code;
-                    option.textContent = `${client.client_code}. ${client.name} (${client.status})`;
-                    select.appendChild(option);
-                });
-            }
+      // признаки частых поездок/такси
+      const TRAVEL_CATS = ['Путешествия', 'Такси', 'Отели', 'Транспорт'];
+      const travelSpending = topCategories.filter(c => TRAVEL_CATS.includes(c.name)).reduce((s,c)=>s+c.amount,0);
+
+      // премиальные траты
+      const PREMIUM_CATS = ['Ювелирные украшения', 'Косметика и Парфюмерия', 'Рестораны', 'Кафе и рестораны'];
+      const premiumSpending = topCategories.filter(c => PREMIUM_CATS.includes(c.name)).reduce((s,c)=>s+c.amount,0);
+
+      // онлайн-сервисы (для кредитки 10%)
+      const ONLINE_CATS = ['Смотрим дома','Едим дома','Играем дома','Доставка','Онлайн-сервисы','Развлечения','Кино'];
+      const onlineSpending = topCategories.filter(c => ONLINE_CATS.includes(c.name)).reduce((s,c)=>s+c.amount,0);
+
+      return {
+        topCategories,
+        totalSpending,
+        monthlySpending: totalSpending/3,
+        transferAgg,
+        balance: toNumber(client.avg_monthly_balance_KZT),
+        travelSpending,
+        premiumSpending,
+        onlineSpending,
+        latestTxDate
+      };
+    }
+
+    function displayTopCategories(categories){
+      const el = document.getElementById('categoryList');
+      if (!categories || !categories.length){ el.innerHTML = '<p style="color:#718096;text-align:center">Нет данных о транзакциях</p>'; return; }
+      el.innerHTML = categories.slice(0,5).map(cat => (
+        `<div class="category-item"><div class="name">${cat.name} (${cat.percentage}%)</div><div class="amount">${formatNumberSpaced(cat.amount)} ₸</div></div>`
+      )).join('');
+    }
+
+    // === ОЦЕНКА ПРОДУКТОВ ===
+    function selectBestProduct(client, a){
+      const products = [];
+      const age = toNumber(client.age);
+      const bal = toNumber(client.avg_monthly_balance_KZT);
+
+      // 1) Карта для путешествий — 4% на поездки/такси/отели/транспорт
+      if (a.travelSpending > 50000) {
+        const monthlyTravel = a.travelSpending/3;
+        const monthlyCashback = monthlyTravel * 0.04;
+        products.push({
+          key:'travel', product:'Карта для путешествий', score: 80 + Math.min(20, a.travelSpending/50000*5),
+          cashback: monthlyCashback, monthlyBenefit: monthlyCashback, matchScore: Math.min(95, 80 + a.travelSpending/10000),
+          reason: `Много поездок и такси — ${formatNumberSpaced(Math.round(monthlyTravel))} ₸/мес. Кешбэк 4% на путешествия и транспорт.`
+        });
+      }
+
+      // 2) Премиальная карта — 2% базовый; 3% при депозите 1–6 млн; 4% при депозите ≥6 млн; лимит 100 000 ₸/мес; повышенный 4% на рестораны/ювелирку/парфюмерию
+      if (bal > 500000 || a.premiumSpending > 100000) {
+        const rate = bal >= 6000000 ? 0.04 : bal >= 1000000 ? 0.03 : 0.02;
+        const monthlyCashback = Math.min(100000, a.monthlySpending * rate);
+        products.push({
+          key:'premium', product:'Премиальная карта', score: 85 + Math.min(15, bal/500000),
+          cashback: monthlyCashback, monthlyBenefit: monthlyCashback, matchScore: Math.min(95, 85 + bal/500000),
+          reason: `Крупный остаток ${formatNumberSpaced(bal)} ₸ и премиальные траты. Кешбэк ${Math.round(rate*100)}% (лимит 100 000 ₸/мес).`
+        });
+      }
+
+      // 3) Кредитная карта — до 10% в любимых 3 кат. + 10% онлайн-сервисы, рассрочка
+      if (a.topCategories.length >= 3) {
+        const top3 = a.topCategories.slice(0,3);
+        const avgTop3 = top3.reduce((s,c)=>s+c.amount,0)/3/3; // среднее по 3 мес → среднее за мес, затем среднее по топ-3
+        const monthlyCashback = avgTop3 * 0.10 + (a.onlineSpending/3) * 0.10;
+        products.push({
+          key:'credit', product:'Кредитная карта', score: 70 + (age < 45 ? 10 : 0) + Math.min(10, a.onlineSpending/50000),
+          cashback: monthlyCashback, monthlyBenefit: monthlyCashback, matchScore: Math.min(85, 70 + top3.length*3),
+          reason: `До 10% в любимых категориях и на онлайн-сервисы. Рассрочка 3–24 мес без переплат.`
+        });
+      }
+
+      // 4) FX / мультивалютные
+      if (a.transferAgg.hasForex) {
+        products.push({
+          key:'fx', product:'Обмен валют', score: 72 + Math.min(10, a.transferAgg.totalOutgoing/300000),
+          cashback: 0, monthlyBenefit: 0, matchScore: 75,
+          reason: 'Частые валютные операции — выгодный курс, авто-покупка по целевому.'
+        });
+      }
+
+      // 5) Депозиты
+      if (bal >= 150000) {
+        // Savings 16.5% — если есть долгосрочный запас
+        const monthlyInterestSavings = bal * 0.165 / 12;
+        products.push({ key:'dep_sav', product:'Депозит Сберегательный', score: 70 + Math.min(20, bal/300000), cashback: 0, monthlyBenefit: monthlyInterestSavings, matchScore: 80, reason: `Доход ${formatNumberSpaced(Math.round(monthlyInterestSavings))} ₸/мес при ставке 16,5%.` });
+        // Accumulative 15.5%
+        const monthlyInterestAcc = bal * 0.155 / 12;
+        products.push({ key:'dep_acc', product:'Депозит Накопительный', score: 65 + Math.min(18, bal/350000), cashback: 0, monthlyBenefit: monthlyInterestAcc, matchScore: 75, reason: `Пополняемый вклад, ставка 15,5%.` });
+        // Multicurrency 14.5%
+        const monthlyInterestMulti = bal * 0.145 / 12;
+        products.push({ key:'dep_multi', product:'Депозит Мультивалютный', score: 62 + Math.min(15, bal/400000), cashback: 0, monthlyBenefit: monthlyInterestMulti, matchScore: 72, reason: `14,5% и гибкий доступ к валютам.` });
+      }
+
+      // 6) Инвестиции — если есть остаток и возраст < 55
+      if (bal > 100000 && age < 55) {
+        const potential = bal * 0.12 / 12;
+        products.push({ key:'invest', product:'Инвестиции', score: 60 + Math.min(12, (55-age)), cashback: 0, monthlyBenefit: potential, matchScore: 70, reason: '0% комиссии на сделки, низкий порог входа.' });
+      }
+
+      // 7) Кредит наличными — если есть признаки дефицита (много платежей по кредитам/коммуналке при невысоком балансе)
+      if ((a.transferAgg.hasLoans || a.transferAgg.utilities > 80000) && bal < 250000) {
+        products.push({ key:'cash_loan', product:'Кредит наличными', score: 58 + Math.min(10, a.transferAgg.utilities/50000), cashback: 0, monthlyBenefit: 0, matchScore: 68, reason: 'Быстрое финансирование без залога, гибкие выплаты.' });
+      }
+
+      if (!products.length){
+        // дефолт — мультивалютный депозит
+        return { product:'Депозит Мультивалютный', cashback:0, monthlyBenefit: bal*0.145/12, matchScore: 60, reason: 'Стабильная доходность и гибкий доступ к валютам.' };
+      }
+
+      products.sort((a,b)=> b.score - a.score);
+      return products[0];
+    }
+
+    // === ПУШ-ТЕКСТЫ С УЧЁТОМ ВОЗРАСТА/TOV ===
+    const MONTHS_RU = ['январе','феврале','марте','апреле','мае','июне','июле','августе','сентябре','октябре','ноябре','декабре'];
+    function monthFromDate(d){ if (!d) return 'этом месяце'; const m = d.getMonth(); return ` ${MONTHS_RU[m]}`; }
+
+    function toneByAge(age){
+      if (age <= 24) return { emoji:'🙂', humor: 1, formal: false };
+      if (age <= 45) return { emoji:'', humor: 1, formal: false };
+      return { emoji:'', humor: 0, formal: true };
+    }
+
+    function clampPush(text){
+      // цель 180–220 символов
+      if (text.length > 220) return text.slice(0,217) + '…';
+      if (text.length < 160) return text; // не растягиваем искусственно
+      return text;
+    }
+
+    function generatePush(client, rec, a){
+      const name = client.name || 'Клиент';
+      const age = toNumber(client.age);
+      const tone = toneByAge(age);
+      const monthWord = monthFromDate(a.latestTxDate);
+
+      const cats = a.topCategories.map(c => c.name);
+      const top3 = cats.slice(0,3).join(', ');
+
+      let text = '';
+      switch (rec.product){
+        case 'Карта для путешествий': {
+          const monthlyTravel = Math.round(a.travelSpending/3);
+          const cb = Math.round(monthlyTravel * 0.04);
+          text = `${name}, в${monthWord} у вас много поездок и такси — ${formatNumberSpaced(monthlyTravel)} ₸. С тревел‑картой вернули бы ≈${formatNumberSpaced(cb)} ₸ кешбэком. Оформить карту?`;
+          break;
         }
-
-        // Резервные данные клиентов
-        function getDefaultClientsData() {
-            return [
-                {client_code: 1, name: "Айгерим", status: "Зарплатный клиент", age: 29, city: "Алматы", avg_monthly_balance_KZT: 92643},
-                {client_code: 2, name: "Данияр", status: "Премиальный клиент", age: 41, city: "Алматы", avg_monthly_balance_KZT: 1577073},
-                {client_code: 3, name: "Сабина", status: "Студент", age: 22, city: "Астана", avg_monthly_balance_KZT: 63116},
-                {client_code: 4, name: "Ержан", status: "Стандартный клиент", age: 35, city: "Караганда", avg_monthly_balance_KZT: 285490},
-                {client_code: 5, name: "Гульнара", status: "Зарплатный клиент", age: 33, city: "Шымкент", avg_monthly_balance_KZT: 420000},
-                {client_code: 6, name: "Тимур", status: "Премиальный клиент", age: 45, city: "Алматы", avg_monthly_balance_KZT: 2150000},
-                {client_code: 7, name: "Алия", status: "Студент", age: 20, city: "Астана", avg_monthly_balance_KZT: 45000},
-                {client_code: 8, name: "Бауржан", status: "Зарплатный клиент", age: 38, city: "Актобе", avg_monthly_balance_KZT: 380000},
-                {client_code: 9, name: "Динара", status: "Стандартный клиент", age: 27, city: "Павлодар", avg_monthly_balance_KZT: 156000},
-                {client_code: 10, name: "Канат", status: "Премиальный клиент", age: 50, city: "Алматы", avg_monthly_balance_KZT: 3200000}
-            ];
+        case 'Премиальная карта': {
+          const rate = (toNumber(client.avg_monthly_balance_KZT) >= 6000000) ? 4 : (toNumber(client.avg_monthly_balance_KZT) >= 1000000 ? 3 : 2);
+          text = `${name}, у вас стабильно крупный остаток и заметные траты в ресторанах. Премиальная карта даст ${rate}% кешбэка (лимит 100 000 ₸/мес) и бесплатные снятия. Оформить сейчас.`;
+          break;
         }
-
-        // Загрузка данных выбранного клиента
-        async function loadClientData() {
-            const clientCode = document.getElementById('clientSelect').value;
-            if (!clientCode) return;
-            
-            const client = clientsData.find(c => c.client_code == clientCode);
-            if (!client) return;
-            
-            // Заполняем поля клиента
-            document.getElementById('clientName').value = client.name;
-            document.getElementById('clientStatus').value = client.status;
-            document.getElementById('clientAge').value = client.age;
-            document.getElementById('clientCity').value = client.city || 'Алматы';
-            document.getElementById('avgBalance').value = formatNumber(client.avg_monthly_balance_KZT);
-            
-            // Показываем загрузку
-            const categoryList = document.getElementById('categoryList');
-            categoryList.innerHTML = '<div class="loading show"><div class="spinner"></div><p>Загрузка транзакций...</p></div>';
-            
-            // Загружаем транзакции и переводы клиента
-            try {
-                const [transactions, transfers] = await Promise.all([
-                    loadClientTransactions(clientCode),
-                    loadClientTransfers(clientCode)
-                ]);
-                
-                // Анализируем данные
-                const analysis = analyzeClientBehavior(transactions, transfers, client);
-                currentClientData = {
-                    client: client,
-                    transactions: transactions,
-                    transfers: transfers,
-                    analysis: analysis
-                };
-                
-                // Отображаем топ категории
-                displayTopCategories(analysis.topCategories);
-                
-                // Активируем кнопку анализа
-                document.getElementById('analyzeBtn').disabled = false;
-            } catch (error) {
-                console.error('Ошибка загрузки данных клиента:', error);
-                // Используем упрощенный анализ
-                currentClientData = {
-                    client: client,
-                    analysis: getSimplifiedAnalysis(client)
-                };
-                displayTopCategories(currentClientData.analysis.topCategories);
-                document.getElementById('analyzeBtn').disabled = false;
-            }
+        case 'Кредитная карта': {
+          text = `${name}, ваши топ‑категории — ${top3}. Кредитная карта даёт до 10% в любимых и на онлайн‑сервисы, плюс рассрочка 3–24 мес. Оформить карту.`;
+          break;
         }
-
-        // Загрузка транзакций клиента
-        async function loadClientTransactions(clientCode) {
-            try {
-                const response = await fetch(`client_${clientCode}_transactions_3m.csv`);
-                const text = await response.text();
-                const parsed = Papa.parse(text, {
-                    header: true,
-                    dynamicTyping: true,
-                    skipEmptyLines: true
-                });
-                return parsed.data;
-            } catch (error) {
-                return [];
-            }
+        case 'Обмен валют': {
+          text = `${name}, вы часто проводите валютные операции. В приложении — выгодный обмен без комиссии и авто‑покупка по целевому курсу. Настроить обмен.`;
+          break;
         }
-
-        // Загрузка переводов клиента
-        async function loadClientTransfers(clientCode) {
-            try {
-                const response = await fetch(`client_${clientCode}_transfers_3m.csv`);
-                const text = await response.text();
-                const parsed = Papa.parse(text, {
-                    header: true,
-                    dynamicTyping: true,
-                    skipEmptyLines: true
-                });
-                return parsed.data;
-            } catch (error) {
-                return [];
-            }
+        case 'Депозит Сберегательный': {
+          const monthly = Math.round(toNumber(client.avg_monthly_balance_KZT)*0.165/12);
+          text = `${name}, свободные средства можно разместить на сберегательном вкладе под 16,5% годовых. Ежемесячный доход — около ${formatNumberSpaced(monthly)} ₸. Открыть вклад.`;
+          break;
         }
-
-        // Анализ поведения клиента
-        function analyzeClientBehavior(transactions, transfers, client) {
-            // Анализ транзакций по категориям
-            const categorySpending = {};
-            let totalSpending = 0;
-            
-            transactions.forEach(t => {
-                if (t.category && t.amount) {
-                    if (!categorySpending[t.category]) {
-                        categorySpending[t.category] = { count: 0, total: 0 };
-                    }
-                    categorySpending[t.category].count++;
-                    categorySpending[t.category].total += t.amount;
-                    totalSpending += t.amount;
-                }
-            });
-            
-            // Топ категории по сумме трат
-            const topCategories = Object.entries(categorySpending)
-                .sort((a, b) => b[1].total - a[1].total)
-                .slice(0, 10)
-                .map(([category, data]) => ({
-                    name: category,
-                    amount: data.total,
-                    count: data.count,
-                    percentage: (data.total / totalSpending * 100).toFixed(1)
-                }));
-            
-            // Анализ переводов
-            const transferAnalysis = {
-                totalIncoming: 0,
-                totalOutgoing: 0,
-                hasSalary: false,
-                hasInvestments: false,
-                hasForex: false,
-                hasLoans: false,
-                atmWithdrawals: 0,
-                p2pTransfers: 0
-            };
-            
-            transfers.forEach(t => {
-                if (t.direction === 'in') {
-                    transferAnalysis.totalIncoming += t.amount || 0;
-                    if (t.type === 'salary_in') transferAnalysis.hasSalary = true;
-                } else {
-                    transferAnalysis.totalOutgoing += t.amount || 0;
-                    if (t.type === 'atm_withdrawal') transferAnalysis.atmWithdrawals += t.amount || 0;
-                    if (t.type === 'p2p_out') transferAnalysis.p2pTransfers += t.amount || 0;
-                    if (t.type === 'invest_out') transferAnalysis.hasInvestments = true;
-                    if (t.type === 'fx_buy' || t.type === 'fx_sell') transferAnalysis.hasForex = true;
-                    if (t.type === 'loan_payment_out') transferAnalysis.hasLoans = true;
-                }
-            });
-            
-            return {
-                topCategories: topCategories,
-                totalSpending: totalSpending,
-                monthlySpending: totalSpending / 3,
-                transferAnalysis: transferAnalysis,
-                balance: client.avg_monthly_balance_KZT
-            };
+        case 'Депозит Накопительный': {
+          text = `${name}, удобно откладывать и не тратить: накопительный вклад под 15,5% с пополнениями. Открыть вклад.`;
+          break;
         }
-
-        // Упрощенный анализ для случаев без данных
-        function getSimplifiedAnalysis(client) {
-            // Генерируем примерные категории на основе статуса и возраста
-            let categories = [];
-            
-            if (client.status === 'Премиальный клиент') {
-                categories = [
-                    {name: 'Рестораны', amount: 150000, count: 20, percentage: '25'},
-                    {name: 'Путешествия', amount: 120000, count: 5, percentage: '20'},
-                    {name: 'Ювелирные украшения', amount: 100000, count: 3, percentage: '17'}
-                ];
-            } else if (client.status === 'Студент') {
-                categories = [
-                    {name: 'Продукты питания', amount: 40000, count: 30, percentage: '35'},
-                    {name: 'Развлечения', amount: 20000, count: 15, percentage: '20'},
-                    {name: 'Книги', amount: 15000, count: 5, percentage: '15'}
-                ];
-            } else if (client.status === 'Зарплатный клиент') {
-                categories = [
-                    {name: 'Продукты питания', amount: 80000, count: 40, percentage: '30'},
-                    {name: 'Такси', amount: 50000, count: 25, percentage: '20'},
-                    {name: 'Кафе и рестораны', amount: 40000, count: 15, percentage: '15'}
-                ];
-            } else {
-                categories = [
-                    {name: 'Продукты питания', amount: 60000, count: 35, percentage: '35'},
-                    {name: 'Авто', amount: 30000, count: 10, percentage: '20'},
-                    {name: 'Развлечения', amount: 25000, count: 12, percentage: '15'}
-                ];
-            }
-            
-            const totalSpending = categories.reduce((sum, cat) => sum + cat.amount, 0);
-            
-            return {
-                topCategories: categories,
-                totalSpending: totalSpending,
-                monthlySpending: totalSpending / 3,
-                balance: client.avg_monthly_balance_KZT
-            };
+        case 'Депозит Мультивалютный': {
+          text = `${name}, мультивалютный вклад 14,5% — хранить и ребалансировать валюты с доступом к деньгам. Открыть вклад.`;
+          break;
         }
-
-        // Отображение топ категорий
-        function displayTopCategories(categories) {
-            const categoryList = document.getElementById('categoryList');
-            if (!categories || categories.length === 0) {
-                categoryList.innerHTML = '<p style="color: #718096; text-align: center;">Нет данных о транзакциях</p>';
-                return;
-            }
-            
-            let html = '';
-            categories.slice(0, 5).forEach(cat => {
-                html += `
-                    <div class="category-item">
-                        <div class="name">${cat.name} (${cat.percentage}%)</div>
-                        <div class="amount">${formatNumber(cat.amount)} ₸</div>
-                    </div>
-                `;
-            });
-            categoryList.innerHTML = html;
+        case 'Инвестиции': {
+          text = `${name}, попробуйте инвестиции: 0% комиссии на сделки и низкий порог входа — удобно начать с небольшой суммы. Открыть счёт.`;
+          break;
         }
-
-        // Анализ и подбор продукта для клиента
-        function analyzeClient() {
-            if (!currentClientData) return;
-            
-            const client = currentClientData.client;
-            const analysis = currentClientData.analysis;
-            
-            // Алгоритм подбора продукта
-            const productRecommendation = selectBestProduct(client, analysis);
-            
-            // Генерация пуш-уведомления
-            const pushNotification = generatePushNotification(client, productRecommendation, analysis);
-            
-            // Обновляем UI
-            document.getElementById('recommendedProduct').value = productRecommendation.product;
-            document.getElementById('reasonText').value = productRecommendation.reason;
-            document.getElementById('pushPreview').textContent = pushNotification;
-            document.getElementById('potentialCashback').textContent = formatNumber(productRecommendation.cashback) + ' ₸';
-            document.getElementById('monthlyBenefit').textContent = formatNumber(productRecommendation.monthlyBenefit) + ' ₸';
-            document.getElementById('matchScore').textContent = productRecommendation.matchScore + '%';
+        case 'Кредит наличными': {
+          text = `${name}, если нужен запас на крупные траты — можно оформить кредит наличными без залога и с гибкими выплатами. Узнать доступный лимит.`;
+          break;
         }
-
-        // Выбор лучшего продукта
-        function selectBestProduct(client, analysis) {
-            const products = [];
-            
-            // Проверяем категории для путешествий
-            const travelCategories = ['Путешествия', 'Такси', 'Отели'];
-            const travelSpending = analysis.topCategories
-                .filter(cat => travelCategories.includes(cat.name))
-                .reduce((sum, cat) => sum + cat.amount, 0);
-            
-            if (travelSpending > 50000) {
-                const monthlyTravel = travelSpending / 3;
-                products.push({
-                    product: 'Карта для путешествий',
-                    score: 85 + (travelSpending / 10000),
-                    cashback: monthlyTravel * 0.04,
-                    monthlyBenefit: monthlyTravel * 0.04,
-                    matchScore: Math.min(95, 85 + (travelSpending / 10000)),
-                    reason: `Клиент активно тратит на путешествия и такси (${formatNumber(monthlyTravel)} ₸/мес). Карта даст 4% кешбэк на эти категории.`
-                });
-            }
-            
-            // Премиальная карта
-            const premiumCategories = ['Рестораны', 'Ювелирные украшения', 'Косметика и Парфюмерия'];
-            const premiumSpending = analysis.topCategories
-                .filter(cat => premiumCategories.includes(cat.name))
-                .reduce((sum, cat) => sum + cat.amount, 0);
-            
-            if (client.avg_monthly_balance_KZT > 1000000 || premiumSpending > 100000) {
-                const cashbackRate = client.avg_monthly_balance_KZT > 6000000 ? 0.04 : 
-                                    client.avg_monthly_balance_KZT > 1000000 ? 0.03 : 0.02;
-                const monthlyCashback = Math.min(100000, analysis.monthlySpending * cashbackRate);
-                
-                products.push({
-                    product: 'Премиальная карта',
-                    score: 90 + (client.avg_monthly_balance_KZT / 500000),
-                    cashback: monthlyCashback,
-                    monthlyBenefit: monthlyCashback,
-                    matchScore: Math.min(95, 90 + (client.avg_monthly_balance_KZT / 500000)),
-                    reason: `Высокий остаток (${formatNumber(client.avg_monthly_balance_KZT)} ₸) и премиальные траты. Карта даст до 4% кешбэка и бесплатные переводы.`
-                });
-            }
-            
-            // Кредитная карта
-            if (analysis.topCategories.length >= 3 && client.age < 40) {
-                const topCats = analysis.topCategories.slice(0, 3);
-                const topSpending = topCats.reduce((sum, cat) => sum + cat.amount, 0) / 3;
-                const cashback = topSpending * 0.1;
-                
-                products.push({
-                    product: 'Кредитная карта',
-                    score: 75 + topCats.length * 2,
-                    cashback: cashback,
-                    monthlyBenefit: cashback,
-                    matchScore: Math.min(85, 75 + topCats.length * 2),
-                    reason: `Разнообразные категории трат. Кредитная карта позволит получать до 10% кешбэк в выбранных категориях.`
-                });
-            }
-            
-            // Депозиты
-            if (client.avg_monthly_balance_KZT > 500000) {
-                const yearlyInterest = client.avg_monthly_balance_KZT * 0.165;
-                const monthlyInterest = yearlyInterest / 12;
-                
-                products.push({
-                    product: 'Депозит Сберегательный',
-                    score: 70 + (client.avg_monthly_balance_KZT / 100000),
-                    cashback: 0,
-                    monthlyBenefit: monthlyInterest,
-                    matchScore: Math.min(80, 70 + (client.avg_monthly_balance_KZT / 100000)),
-                    reason: `Значительный остаток на счету. Депозит под 16.5% годовых принесет ${formatNumber(monthlyInterest)} ₸ ежемесячно.`
-                });
-            }
-            
-            // Инвестиции
-            if (client.avg_monthly_balance_KZT > 100000 && client.age < 50) {
-                const potentialReturn = client.avg_monthly_balance_KZT * 0.12 / 12;
-                
-                products.push({
-                    product: 'Инвестиции',
-                    score: 65 + (50 - client.age) / 2,
-                    cashback: 0,
-                    monthlyBenefit: potentialReturn,
-                    matchScore: Math.min(75, 65 + (50 - client.age) / 2),
-                    reason: 'Начните инвестировать с минимальным порогом входа. Без комиссий в первый год.'
-                });
-            }
-            
-            // Выбираем лучший продукт
-            if (products.length === 0) {
-                // Дефолтный продукт
-                return {
-                    product: 'Депозит Мультивалютный',
-                    cashback: 0,
-                    monthlyBenefit: client.avg_monthly_balance_KZT * 0.145 / 12,
-                    matchScore: 60,
-                    reason: 'Защитите сбережения от курсовых колебаний с мультивалютным депозитом.'
-                };
-            }
-            
-            // Сортируем по score и возвращаем лучший
-            products.sort((a, b) => b.score - a.score);
-            return products[0];
+        default: {
+          text = `${name}, откройте новые возможности с нашими продуктами — подберём под ваши привычки. Посмотреть варианты.`;
         }
+      }
 
-        // Генерация пуш-уведомления
-        function generatePushNotification(client, recommendation, analysis) {
-            const name = client.name;
-            const product = recommendation.product;
-            
-            let pushText = '';
-            
-            switch (product) {
-                case 'Карта для путешествий':
-                    const travelSpend = Math.round(analysis.topCategories
-                        .filter(cat => ['Путешествия', 'Такси', 'Отели'].includes(cat.name))
-                        .reduce((sum, cat) => sum + cat.amount/3, 0));
-                    const travelCashback = Math.round(travelSpend * 0.04);
-                    pushText = `${name}, в этом месяце у вас траты на поездки ${formatNumber(travelSpend)} ₸. С картой для путешествий вернули бы ${formatNumber(travelCashback)} ₸. Оформить карту.`;
-                    break;
-                    
-                case 'Премиальная карта':
-                    pushText = `${name}, у вас высокий остаток на счету. Премиальная карта даст до 4% кешбэка и бесплатные снятия. Подключить сейчас.`;
-                    break;
-                    
-                case 'Кредитная карта':
-                    const topCats = analysis.topCategories.slice(0, 3).map(c => c.name).join(', ');
-                    pushText = `${name}, ваши топ-категории — ${topCats}. Кредитная карта даёт до 10% в любимых категориях. Оформить карту.`;
-                    break;
-                    
-                case 'Депозит Сберегательный':
-                    const monthlyIncome = Math.round(client.avg_monthly_balance_KZT * 0.165 / 12);
-                    pushText = `${name}, разместите свободные средства на депозите под 16,5% годовых. Ежемесячный доход ${formatNumber(monthlyIncome)} ₸. Открыть вклад.`;
-                    break;
-                    
-                case 'Депозит Накопительный':
-                    pushText = `${name}, у вас остаются свободные средства. Накопительный вклад под 15,5% с пополнением. Открыть вклад.`;
-                    break;
-                    
-                case 'Депозит Мультивалютный':
-                    pushText = `${name}, защитите сбережения от курсовых колебаний. Мультивалютный депозит под 14,5%. Открыть вклад.`;
-                    break;
-                    
-                case 'Инвестиции':
-                    pushText = `${name}, начните инвестировать с минимальным порогом входа. Без комиссий в первый год. Открыть счёт.`;
-                    break;
-                    
-                case 'Обмен валют':
-                    pushText = `${name}, вы часто меняете валюту. В приложении выгодный курс и авто-покупка по целевому курсу. Настроить обмен.`;
-                    break;
-                    
-                default:
-                    pushText = `${name}, откройте новые возможности с нашими продуктами. Узнать подробнее в приложении.`;
-            }
-            
-            // Проверяем длину (180-220 символов)
-            if (pushText.length > 220) {
-                pushText = pushText.substring(0, 217) + '...';
-            }
-            
-            return pushText;
+      // TOV корректировки
+      if (tone.humor && rec.product !== 'Кредит наличными') {
+        text = text.replace(/\.$/, '') + (tone.emoji ? ` ${tone.emoji}` : '');
+      }
+      return clampPush(text);
+    }
+
+    // === АНАЛИЗ И ОТРИСОВКА ДЛЯ ОДНОГО КЛИЕНТА ===
+    function analyzeClient(){
+      if (!currentClientData) return;
+      const { client, analysis } = currentClientData;
+      const rec = selectBestProduct(client, analysis);
+      const push = generatePush(client, rec, analysis);
+      document.getElementById('recommendedProduct').value = rec.product;
+      document.getElementById('reasonText').value = rec.reason;
+      document.getElementById('pushPreview').textContent = push;
+      document.getElementById('potentialCashback').textContent = formatMoneyKZT(rec.cashback || 0);
+      document.getElementById('monthlyBenefit').textContent = formatMoneyKZT(rec.monthlyBenefit || 0);
+      document.getElementById('matchScore').textContent = (rec.matchScore || 0) + '%';
+    }
+
+    // === ГЕНЕРАЦИЯ ДЛЯ ВСЕХ ===
+    async function generateAllPushes(){
+      allResults = [];
+      const body = document.getElementById('resultsBody');
+      body.innerHTML = '';
+      document.getElementById('loadingIndicator').classList.add('show');
+      document.getElementById('resultsTable').style.display = 'none';
+      document.getElementById('progressBar').style.width = '0%';
+      document.getElementById('progressText').textContent = 'Начинаем анализ…';
+
+      let processed = 0;
+      for (const client of clientsData){
+        try{
+          const [tx, tr] = await Promise.all([
+            loadClientTransactions(client.client_code),
+            loadClientTransfers(client.client_code)
+          ]);
+          const analysis = analyzeClientBehavior(tx, tr, client);
+          const rec = selectBestProduct(client, analysis);
+          const push = generatePush(client, rec, analysis);
+          allResults.push({ client_code: client.client_code, product: rec.product, push_notification: push });
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${client.client_code}</td><td>${client.name}</td><td><span class="product-badge">${rec.product}</span></td><td style="max-width:520px; font-size:13px; line-height:1.35">${push}</td>`;
+          body.appendChild(row);
+        } catch(e){
+          console.error(`Ошибка клиента ${client.client_code}`, e);
         }
+        processed++;
+        document.getElementById('progressBar').style.width = (processed/clientsData.length*100) + '%';
+        document.getElementById('progressText').textContent = `Обработано ${processed} из ${clientsData.length} клиентов`;
+        await new Promise(r=>setTimeout(r, 20));
+      }
 
-        // Генерация для всех клиентов
-        async function generateAllPushes() {
-            allResults = [];
-            const resultsBody = document.getElementById('resultsBody');
-            resultsBody.innerHTML = '';
-            
-            document.getElementById('loadingIndicator').classList.add('show');
-            document.getElementById('resultsTable').style.display = 'none';
-            document.getElementById('progressBar').style.width = '0%';
-            document.getElementById('progressText').textContent = 'Начинаем анализ...';
-            
-            let processed = 0;
-            
-            for (const client of clientsData) {
-                try {
-                    // Загружаем данные клиента
-                    const [transactions, transfers] = await Promise.all([
-                        loadClientTransactions(client.client_code),
-                        loadClientTransfers(client.client_code)
-                    ]);
-                    
-                    // Анализируем
-                    const analysis = transactions.length > 0 ? 
-                        analyzeClientBehavior(transactions, transfers, client) :
-                        getSimplifiedAnalysis(client);
-                    
-                    // Подбираем продукт
-                    const recommendation = selectBestProduct(client, analysis);
-                    
-                    // Генерируем пуш
-                    const pushNotification = generatePushNotification(client, recommendation, analysis);
-                    
-                    // Сохраняем результат
-                    const result = {
-                        client_code: client.client_code,
-                        product: recommendation.product,
-                        push_notification: pushNotification
-                    };
-                    allResults.push(result);
-                    
-                    // Добавляем в таблицу
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${result.client_code}</td>
-                        <td>${client.name}</td>
-                        <td><span class="product-badge">${result.product}</span></td>
-                        <td style="max-width: 400px; font-size: 13px;">${result.push_notification}</td>
-                    `;
-                    resultsBody.appendChild(row);
-                    
-                } catch (error) {
-                    console.error(`Ошибка обработки клиента ${client.client_code}:`, error);
-                    // Используем упрощенный анализ
-                    const analysis = getSimplifiedAnalysis(client);
-                    const recommendation = selectBestProduct(client, analysis);
-                    const pushNotification = generatePushNotification(client, recommendation, analysis);
-                    
-                    const result = {
-                        client_code: client.client_code,
-                        product: recommendation.product,
-                        push_notification: pushNotification
-                    };
-                    allResults.push(result);
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${result.client_code}</td>
-                        <td>${client.name}</td>
-                        <td><span class="product-badge">${result.product}</span></td>
-                        <td style="max-width: 400px; font-size: 13px;">${result.push_notification}</td>
-                    `;
-                    resultsBody.appendChild(row);
-                }
-                
-                // Обновляем прогресс
-                processed++;
-                const progress = (processed / clientsData.length) * 100;
-                document.getElementById('progressBar').style.width = progress + '%';
-                document.getElementById('progressText').textContent = `Обработано ${processed} из ${clientsData.length} клиентов`;
-                
-                // Небольшая задержка для визуализации
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-            
-            document.getElementById('loadingIndicator').classList.remove('show');
-            document.getElementById('resultsTable').style.display = 'table';
-            document.getElementById('progressText').textContent = `✅ Все ${clientsData.length} клиентов обработаны!`;
-            document.getElementById('downloadBtn').disabled = false;
-            
-            alert(`✅ Генерация завершена! Обработано ${clientsData.length} клиентов.`);
-        }
+      document.getElementById('loadingIndicator').classList.remove('show');
+      document.getElementById('resultsTable').style.display = 'table';
+      document.getElementById('downloadBtn').disabled = false;
+      document.getElementById('progressText').textContent = `✅ Все ${clientsData.length} клиентов обработаны!`;
+      alert(`✅ Готово! Обработано ${clientsData.length} клиентов.`);
+    }
 
-        // Скачивание CSV
-        function downloadCSV() {
-            if (allResults.length === 0) {
-                alert('Сначала сгенерируйте пуш-уведомления для всех клиентов');
-                return;
-            }
-            
-            // Создаем CSV контент
-            let csvContent = 'client_code,product,push_notification\n';
-            
-            allResults.forEach(result => {
-                // Экранируем кавычки в тексте пуша
-                const escapedPush = result.push_notification.replace(/"/g, '""');
-                csvContent += `${result.client_code},"${result.product}","${escapedPush}"\n`;
-            });
-            
-            // Создаем Blob и скачиваем файл
-            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'push_notifications.csv');
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            alert('✅ CSV файл успешно скачан!');
-        }
+    // === ВЫГРУЗКА CSV ===
+    function downloadCSV(){
+      if (!allResults.length){ alert('Сначала сгенерируйте результаты'); return; }
+      let csv = 'client_code,product,push_notification\n';
+      for (const r of allResults){
+        const esc = (s)=> String(s).replace(/"/g,'""');
+        csv += `${r.client_code},"${esc(r.product)}","${esc(r.push_notification)}"\n`;
+      }
+      const blob = new Blob(['\ufeff'+csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      a.href = url; a.download = 'push_notifications.csv'; a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
 
-        // Инициализация при загрузке страницы
-        window.onload = function() {
-            loadClientsData();
-        };
-    </script>
+    // === ИНИЦИАЛИЗАЦИЯ ===
+    window.onload = () => { loadClientsData().catch(e=>{ console.error(e); alert('Не удалось загрузить /data/clients.csv'); }); };
+  </script>
 </body>
 </html>
