@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏦 GoKens Bank AI - BCC Hackathon 2025</title>
+    
+    <!-- Библиотеки -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+            animation: fadeIn 1s;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: slideIn 0.5s;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .file-upload-area:hover {
+            background: #f8f9ff;
+            border-color: #764ba2;
+        }
+        
+        .file-upload-area.active {
+            background: #f0f4ff;
+            border-color: #10b981;
+        }
+        
+        .file-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7ff 0%, #e8ecff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 16px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .client-card {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            animation: slideIn 0.3s;
+        }
+        
+        .client-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .product-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        
+        .notification-box {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .phone-mockup {
+            background: #1f2937;
+            border-radius: 30px;
+            padding: 20px;
+            max-width: 350px;
+            margin: 20px auto;
+        }
+        
+        .phone-screen {
+            background: white;
+            border-radius: 20px;
+            padding: 10px;
+            margin-top: 40px;
+        }
+        
+        .notification-preview {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px;
+        }
+        
+        .app-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #chartContainer {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 GoKens Bank AI</h1>
+            <p style="font-size: 20px; opacity: 0.9;">Система персонализированных рекомендаций</p>
+            <p style="opacity: 0.8;">Хакатон AI BCC 2025</p>
+        </div>
+        
+        <div class="main-grid">
+            <!-- Левая панель управления -->
+            <div class="panel">
+                <h2 class="section-title">
+                    <span>📁</span> Загрузка данных
+                </h2>
+                
+                <div class="file-upload-area" id="uploadArea">
+                    <input type="file" class="file-input" id="fileInput" multiple accept=".csv">
+                    <div class="upload-icon">📤</div>
+                    <p style="font-weight: 600; margin: 10px 0;">Загрузите CSV файлы</p>
+                    <p style="font-size: 14px; color: #6b7280;">Выберите все 121 файл</p>
+                </div>
+                
+                <div id="filesList" class="hidden" style="max-height: 200px; overflow-y: auto; margin: 20px 0;"></div>
+                
+                <button class="btn" id="processBtn" onclick="processData()" disabled>
+                    🚀 Запустить анализ
+                </button>
+                
+                <div class="progress-bar hidden" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div class="stats-grid hidden" id="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="clientCount">0</div>
+                        <div class="stat-label">Клиентов</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="productCount">0</div>
+                        <div class="stat-label">Продуктов</div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-success hidden" id="downloadBtn" onclick="downloadCSV()">
+                    💾 Скачать CSV
+                </button>
+            </div>
+            
+            <!-- Правая панель с результатами -->
+            <div class="panel">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('results')">📊 Результаты</button>
+                    <button class="tab" onclick="switchTab('analytics')">📈 Аналитика</button>
+                    <button class="tab" onclick="switchTab('examples')">📱 Примеры</button>
+                </div>
+                
+                <div class="tab-content active" id="resultsTab">
+                    <h2 class="section-title">Результаты анализа</h2>
+                    <div id="resultsContainer">
+                        <p style="color: #6b7280; text-align: center; padding: 40px;">
+                            Загрузите данные и запустите анализ
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="analyticsTab">
+                    <h2 class="section-title">Аналитика</h2>
+                    <div id="chartContainer"></div>
+                </div>
+                
+                <div class="tab-content" id="examplesTab">
+                    <h2 class="section-title">Примеры уведомлений</h2>
+                    <div id="examplesContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Глобальные переменные
+        let clientsData = null;
+        let transactionsData = {};
+        let transfersData = {};
+        let results = [];
+        
+        // Каталог продуктов
+        const PRODUCTS = {
+            'Карта для путешествий': { cashback: 0.04, categories: ['Путешествия', 'Такси', 'Отели'] },
+            'Премиальная карта': { minBalance: 1000000, cashback: 0.03 },
+            'Кредитная карта': { cashback: 0.10, categories: ['Едим дома', 'Смотрим дома', 'Играем дома'] },
+            'Депозит Сберегательный': { rate: 0.165, minBalance: 100000 },
+            'Депозит Накопительный': { rate: 0.155, minBalance: 100000 },
+            'Депозит Мультивалютный': { rate: 0.145, minBalance: 100000 },
+            'Инвестиции': { potentialReturn: 0.20, minBalance: 500000 },
+            'Обмен валют': { savings: 0.01 },
+            'Кредит наличными': { rate: 0.12 },
+            'Золотые слитки': { minBalance: 500000 }
+        };
+        
+        // Обработка загрузки файлов
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        });
+        
+        async function handleFiles(files) {
+            const uploadArea = document.getElementById('uploadArea');
+            uploadArea.classList.add('active');
+            
+            const filesList = document.getElementById('filesList');
+            filesList.innerHTML = '<p style="font-weight: 600; margin-bottom: 10px;">Загруженные файлы:</p>';
+            filesList.classList.remove('hidden');
+            
+            for (const file of files) {
+                const fileName = file.name;
+                filesList.innerHTML += `<div style="padding: 5px; background: #f3f4f6; margin: 2px 0; border-radius: 5px;">📄 ${fileName}</div>`;
+                
+                // Чтение и парсинг CSV
+                const text = await file.text();
+                const parsed = Papa.parse(text, { header: true, dynamicTyping: true });
+                
+                if (fileName === 'clients.csv') {
+                    clientsData = parsed.data;
+                } else if (fileName.includes('transactions')) {
+                    const clientId = parseInt(fileName.match(/client_(\d+)/)[1]);
+                    transactionsData[clientId] = parsed.data;
+                } else if (fileName.includes('transfers')) {
+                    const clientId = parseInt(fileName.match(/client_(\d+)/)[1]);
+                    transfersData[clientId] = parsed.data;
+                }
+            }
+            
+            // Активация кнопки обработки
+            if (clientsData) {
+                document.getElementById('processBtn').disabled = false;
+                document.getElementById('uploadArea').innerHTML = `
+                    <div class="upload-icon">✅</div>
+                    <p style="font-weight: 600; color: #10b981;">Загружено ${files.length} файлов</p>
+                `;
+            }
+        }
+        
+        // Основная функция обработки
+        async function processData() {
+            if (!clientsData) return;
+            
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            progressBar.classList.remove('hidden');
+            
+            results = [];
+            
+            for (let i = 0; i < clientsData.length; i++) {
+                const client = clientsData[i];
+                
+                // Обновление прогресса
+                progressFill.style.width = `${((i + 1) / clientsData.length) * 100}%`;
+                
+                // Анализ клиента
+                const features = extractFeatures(client, 
+                    transactionsData[client.client_code] || [], 
+                    transfersData[client.client_code] || []);
+                
+                // Выбор продукта
+                const bestProduct = selectBestProduct(features);
+                
+                // Генерация уведомления
+                const notification = generateNotification(client, bestProduct, features);
+                
+                results.push({
+                    client_code: client.client_code,
+                    product: bestProduct.name,
+                    push_notification: notification
+                });
+                
+                // Небольшая задержка для анимации
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            
+            // Показ результатов
+            displayResults();
+            displayAnalytics();
+            displayExamples();
+            
+            // Показ статистики
+            document.getElementById('stats').classList.remove('hidden');
+            document.getElementById('clientCount').textContent = results.length;
+            document.getElementById('productCount').textContent = new Set(results.map(r => r.product)).size;
+            
+            // Показ кнопки скачивания
+            document.getElementById('downloadBtn').classList.remove('hidden');
+        }
+        
+        // Извлечение признаков
+        function extractFeatures(client, transactions, transfers) {
+            const features = {
+                name: client.name,
+                age: client.age,
+                status: client.status,
+                balance: client.avg_monthly_balance_KZT,
+                city: client.city
+            };
+            
+            // Анализ транзакций
+            if (transactions.length > 0) {
+                features.totalSpending = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                
+                const categorySpending = {};
+                transactions.forEach(t => {
+                    if (t.category) {
+                        categorySpending[t.category] = (categorySpending[t.category] || 0) + t.amount;
+                    }
+                });
+                
+                features.travelSpending = (categorySpending['Путешествия'] || 0) + 
+                                         (categorySpending['Такси'] || 0) + 
+                                         (categorySpending['Отели'] || 0);
+                
+                features.premiumSpending = (categorySpending['Ювелирные украшения'] || 0) + 
+                                          (categorySpending['Косметика и Парфюмерия'] || 0) + 
+                                          (categorySpending['Кафе и рестораны'] || 0);
+                
+                features.onlineSpending = (categorySpending['Едим дома'] || 0) + 
+                                         (categorySpending['Смотрим дома'] || 0) + 
+                                         (categorySpending['Играем дома'] || 0);
+                
+                const sortedCategories = Object.entries(categorySpending)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3);
+                features.topCategories = sortedCategories.map(c => c[0]);
+            } else {
+                // Эвристика если нет данных
+                features.totalSpending = features.balance * 0.9;
+                features.travelSpending = features.totalSpending * 0.1;
+                features.premiumSpending = features.totalSpending * 0.05;
+                features.onlineSpending = features.totalSpending * 0.15;
+                features.topCategories = ['Продукты питания', 'Транспорт', 'Развлечения'];
+            }
+            
+            // Анализ переводов
+            if (transfers.length > 0) {
+                const income = transfers.filter(t => t.direction === 'in')
+                    .reduce((sum, t) => sum + (t.amount || 0), 0);
+                const expense = transfers.filter(t => t.direction === 'out')
+                    .reduce((sum, t) => sum + (t.amount || 0), 0);
+                
+                features.fxActive = transfers.some(t => t.type === 'fx_buy' || t.type === 'fx_sell');
+                features.hasLoans = transfers.some(t => t.type === 'loan_payment_out');
+            } else {
+                features.fxActive = features.city === 'Алматы' || features.city === 'Астана';
+                features.hasLoans = false;
+            }
+            
+            return features;
+        }
+        
+        // Выбор лучшего продукта
+        function selectBestProduct(features) {
+            const scores = [];
+            
+            // Карта для путешествий
+            if (features.travelSpending > 0) {
+                const benefit = features.travelSpending * 0.04;
+                scores.push({
+                    name: 'Карта для путешествий',
+                    score: Math.min(1, features.travelSpending / features.totalSpending * 3),
+                    benefit: benefit
+                });
+            }
+            
+            // Премиальная карта
+            if (features.balance >= 1000000) {
+                const cashbackRate = features.balance >= 6000000 ? 0.04 : 0.03;
+                const benefit = Math.min(features.totalSpending * cashbackRate, 300000);
+                scores.push({
+                    name: 'Премиальная карта',
+                    score: features.balance / 3000000,
+                    benefit: benefit
+                });
+            }
+            
+            // Кредитная карта
+            if (features.age >= 21 && features.age <= 50) {
+                const benefit = features.onlineSpending * 0.10;
+                scores.push({
+                    name: 'Кредитная карта',
+                    score: features.onlineSpending / features.totalSpending,
+                    benefit: benefit
+                });
+            }
+            
+            // Депозит Сберегательный
+            if (features.balance >= 100000) {
+                const benefit = features.balance * 0.165 / 4;
+                scores.push({
+                    name: 'Депозит Сберегательный',
+                    score: features.balance / 2000000 * 0.9,
+                    benefit: benefit
+                });
+            }
+            
+            // Депозит Накопительный
+            if (features.balance >= 100000 && features.status === 'Зарплатный клиент') {
+                const benefit = features.balance * 0.155 / 4;
+                scores.push({
+                    name: 'Депозит Накопительный',
+                    score: features.balance / 2000000 * 0.8,
+                    benefit: benefit
+                });
+            }
+            
+            // Инвестиции
+            if (features.balance >= 500000 && !features.hasLoans) {
+                const benefit = features.balance * 0.20 / 4;
+                scores.push({
+                    name: 'Инвестиции',
+                    score: features.balance / 3000000 * 0.6,
+                    benefit: benefit
+                });
+            }
+            
+            // Обмен валют
+            if (features.fxActive) {
+                scores.push({
+                    name: 'Обмен валют',
+                    score: 0.4,
+                    benefit: features.totalSpending * 0.01
+                });
+            }
+            
+            // Выбор лучшего
+            scores.sort((a, b) => b.score - a.score);
+            return scores[0] || { name: 'Депозит Накопительный', benefit: features.balance * 0.155 / 4 };
+        }
+        
+        // Генерация уведомления
+        function generateNotification(client, product, features) {
+            const name = client.name;
+            const benefit = Math.round(product.benefit).toLocaleString('ru-RU').replace(/,/g, ' ');
+            const isYoung = client.age < 30;
+            
+            const templates = {
+                'Карта для путешествий': [
+                    `${name}, в январе у вас много поездок/такси. С тревел-картой часть расходов вернулась бы кешбэком. Хотите оформить?`,
+                    `${name}, траты на поездки ${Math.round(features.travelSpending).toLocaleString('ru-RU').replace(/,/g, ' ')} ₸. Карта вернёт ${benefit} ₸. Открыть карту.`
+                ],
+                'Премиальная карта': [
+                    `${name}, у вас стабильно крупный остаток и траты в ресторанах. Премиальная карта даст повышенный кешбэк и бесплатные снятия. Оформить сейчас.`,
+                    `${name}, ваш статус даёт преимущества. До 4% кешбэка, выгода ${benefit} ₸/квартал. Активировать.`
+                ],
+                'Кредитная карта': [
+                    `${name}, ваши топ-категории — ${features.topCategories.slice(0, 2).join(', ')}. Кредитная карта даёт до 10% в любимых категориях. Оформить карту.`,
+                    `${name}, кешбэк 10% на любимые покупки! Экономия ${benefit} ₸. Подключить.`
+                ],
+                'Депозит Сберегательный': [
+                    `${name}, у вас остаются свободные средства. Разместите их на вкладе — удобно копить и получать вознаграждение. Открыть вклад.`,
+                    `${name}, депозит 16,5% годовых принесёт ${benefit} ₸ за квартал. Начать копить.`
+                ],
+                'Депозит Накопительный': [
+                    `${name}, накопительный вклад 15,5% с пополнением. Доход ${benefit} ₸ за 3 месяца. Открыть.`,
+                    `${name}, откладывайте с выгодой. 15,5% годовых, прибыль ${benefit} ₸. Начать.`
+                ],
+                'Инвестиции': [
+                    `${name}, попробуйте инвестиции с низким порогом входа и без комиссий на старт. Открыть счёт.`,
+                    `${name}, инвестиции от 6 ₸. Потенциал дохода ${benefit} ₸ в квартал. Начать.`
+                ],
+                'Обмен валют': [
+                    `${name}, экономьте на обмене валют. Выгодный курс 24/7, экономия до ${benefit} ₸. Попробовать.`,
+                    `${name}, меняете валюту? Курс лучше на 1-2% в приложении. Настроить обмен.`
+                ]
+            };
+            
+            const productTemplates = templates[product.name] || [
+                `${name}, откройте новые возможности. Выгода ${benefit} ₸. Узнать больше.`
+            ];
+            
+            let notification = isYoung ? productTemplates[1] || productTemplates[0] : productTemplates[0];
+            
+            // Проверка длины
+            if (notification.length > 220) {
+                notification = notification.substring(0, 217) + '...';
+            } else if (notification.length < 180) {
+                notification += ' Подробнее в приложении.';
+            }
+            
+            return notification;
+        }
+        
+        // Отображение результатов
+        function displayResults() {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            results.slice(0, 10).forEach(result => {
+                container.innerHTML += `
+                    <div class="client-card">
+                        <div class="client-header">
+                            <strong>Клиент #${result.client_code}</strong>
+                        </div>
+                        <div class="product-badge">${result.product}</div>
+                        <div class="notification-box">
+                            ${result.push_notification}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (results.length > 10) {
+                container.innerHTML += `
+                    <p style="text-align: center; color: #6b7280; margin: 20px;">
+                        Показано 10 из ${results.length} результатов
+                    </p>
+                `;
+            }
+        }
+        
+        // Отображение аналитики
+        function displayAnalytics() {
+            const productCounts = {};
+            results.forEach(r => {
+                productCounts[r.product] = (productCounts[r.product] || 0) + 1;
+            });
+            
+            const data = [{
+                labels: Object.keys(productCounts),
+                values: Object.values(productCounts),
+                type: 'pie',
+                hole: 0.3,
+                marker: {
+                    colors: ['#667eea', '#764ba2', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899']
+                }
+            }];
+            
+            const layout = {
+                title: 'Распределение рекомендованных продуктов',
+                height: 400
+            };
+            
+            Plotly.newPlot('chartContainer', data, layout);
+        }
+        
+        // Отображение примеров
+        function displayExamples() {
+            const container = document.getElementById('examplesContainer');
+            
+            const examples = results.slice(0, 3);
+            examples.forEach(example => {
+                const client = clientsData.find(c => c.client_code === example.client_code);
+                
+                container.innerHTML += `
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="notification-preview">
+                                <div class="app-icon">🏦</div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; font-size: 14px;">GoKens Bank</div>
+                                    <div style="font-size: 13px; color: #4b5563; margin-top: 5px;">
+                                        ${example.push_notification}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; padding: 10px;">
+                                <button style="flex: 1; background: #f3f4f6; border: none; padding: 8px; border-radius: 8px;">
+                                    Позже
+                                </button>
+                                <button style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 8px; border-radius: 8px;">
+                                    Открыть
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        // Переключение табов
+        function switchTab(tabName) {
+            // Скрыть все табы
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Показать выбранный таб
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Скачивание CSV
+        function downloadCSV() {
+            let csv = 'client_code,product,push_notification\n';
+            results.forEach(r => {
+                csv += `${r.client_code},"${r.product}","${r.push_notification}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'recommendations.csv';
+            link.click();
+        }
+    </script>
+</body>
+</html>
